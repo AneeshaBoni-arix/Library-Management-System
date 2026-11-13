@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <vector>
 #include <string>
@@ -7,9 +6,10 @@
 #include <iomanip>
 #include <limits>
 #include <cctype>
+
 using namespace std;
 
-//DATE CLASS
+// ================= DATE CLASS =================
 
 class Date {
 public:
@@ -95,26 +95,34 @@ public:
         return ss.str();
     }
 
+    // UPDATED DATE INPUT FUNCTION
+
     static bool readDate(Date &date) {
         string input;
         char dash1, dash2;
-        stringstream ss;
+        char extra;
 
-        getline(cin, input);
-        ss.str(input);
+        cout << flush;
+
+        getline(cin >> ws, input);
+
+        stringstream ss(input);
 
         if (!(ss >> date.day >> dash1
                  >> date.month >> dash2 >> date.year))
             return false;
 
-        if (dash1 != '-' || dash2 != '-' || !ss.eof())
+        if (dash1 != '-' || dash2 != '-')
+            return false;
+
+        if (ss >> extra)
             return false;
 
         return date.valid();
     }
 };
 
-//BOOK CLASS
+// ================= BOOK CLASS =================
 
 class Book {
 public:
@@ -134,13 +142,15 @@ public:
         location = loc;
     }
 };
-//BORROWER CLASS
+
+// ================= BORROWER CLASS =================
 
 class Borrower {
 public:
     string name, borrowerID, type;
 
     int bookID;
+
     Date borrowDate, dueDate, returnDate;
 
     int renewals;
@@ -164,7 +174,7 @@ public:
     }
 };
 
-//LIBRARY CLASS
+// ================= LIBRARY CLASS =================
 
 class Library {
 
@@ -173,11 +183,11 @@ private:
     vector<Book> books;
     vector<Borrower> borrowers;
 
-    // Admin credentials
     string adminUsername = "admin";
     string adminPassword = "library123";
 
-    // Convert text to lowercase
+    // CONVERT STRING TO LOWERCASE
+
     string toLowerCase(string text) {
         transform(text.begin(), text.end(), text.begin(),
                   [](unsigned char c) {
@@ -187,7 +197,8 @@ private:
         return text;
     }
 
-    // Get borrowing period
+    // BORROWING PERIOD
+
     int getBorrowDays(string type) {
         if (type == "Student")
             return 14;
@@ -201,7 +212,8 @@ private:
         return 0;
     }
 
-    // Get maximum borrowing limit
+    // BORROWING LIMIT
+
     int getBorrowLimit(string type) {
         if (type == "Student")
             return 2;
@@ -215,7 +227,8 @@ private:
         return 0;
     }
 
-    // Get maximum renewals
+    // RENEWAL LIMIT
+
     int getRenewalLimit(string type) {
         if (type == "Faculty")
             return 2;
@@ -226,7 +239,8 @@ private:
         return 0;
     }
 
-    // Get fine per day
+    // FINE RATE
+
     double getFineRate(string type) {
         if (type == "Student")
             return 5;
@@ -240,7 +254,8 @@ private:
         return 0;
     }
 
-    // Find book using ID
+    // FIND BOOK USING ID
+
     int findBook(int id) {
         for (int i = 0; i < books.size(); i++) {
             if (books[i].bookID == id)
@@ -250,29 +265,38 @@ private:
         return -1;
     }
 
-    // Get member details
+    // GET MEMBER DETAILS
+
     bool getMember(string &name, string &id, string &type) {
 
         cout << "\nEnter Member Name: ";
-        getline(cin, name);
+        getline(cin >> ws, name);
 
         cout << "Enter Member ID: ";
         getline(cin, id);
 
-        cout << "Select Member Type:\n";
+        cout << "\nSelect Member Type:\n";
         cout << "1. Student\n";
         cout << "2. Faculty\n";
         cout << "3. Staff\n";
+
         cout << "Enter choice: ";
 
         int choice;
         cin >> choice;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         switch (choice) {
-            case 1: type = "Student"; break;
-            case 2: type = "Faculty"; break;
-            case 3: type = "Staff"; break;
+            case 1:
+                type = "Student";
+                break;
+
+            case 2:
+                type = "Faculty";
+                break;
+
+            case 3:
+                type = "Staff";
+                break;
 
             default:
                 cout << "Invalid member type!\n";
@@ -282,7 +306,8 @@ private:
         return true;
     }
 
-    // Search books
+    // SEARCH BOOKS
+
     vector<int> searchBooks() {
 
         vector<int> results;
@@ -314,14 +339,12 @@ private:
 
             string keyword;
 
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
             if (choice == 2)
                 cout << "Enter Book Title: ";
             else
                 cout << "Enter Author Name: ";
 
-            getline(cin, keyword);
+            getline(cin >> ws, keyword);
 
             keyword = toLowerCase(keyword);
 
@@ -351,7 +374,8 @@ private:
         return results;
     }
 
-    // Display search results
+    // DISPLAY SEARCH RESULTS
+
     void displayResults(vector<int> results) {
 
         for (int i : results) {
@@ -360,15 +384,19 @@ private:
             cout << "\nTitle: " << books[i].title;
             cout << "\nAuthor: " << books[i].author;
             cout << "\nGenre: " << books[i].genre;
+
             cout << "\nAvailable Copies: "
                  << books[i].availableCopies;
-            cout << "\nShelf Location: " << books[i].location;
+
+            cout << "\nShelf Location: "
+                 << books[i].location;
 
             cout << "\n-----------------------------\n";
         }
     }
 
-    // Select a book from search results
+    // SELECT BOOK
+
     int selectBook(vector<int> results) {
 
         if (results.empty()) {
@@ -392,27 +420,29 @@ private:
         }
 
         cout << "Invalid Book ID!\n";
+
         return -1;
     }
 
-    // Display borrowing rules
+    // BORROWING POLICY
+
     void displayRules() {
 
         cout << "\n========== BORROWING POLICY ==========\n";
 
-        cout << "\nStudent:";
+        cout << "\nSTUDENT";
         cout << "\nMaximum Books: 2";
         cout << "\nBorrowing Period: 14 Days";
         cout << "\nRenewals: 1";
         cout << "\nFine: Rs.5 per day";
 
-        cout << "\n\nFaculty:";
+        cout << "\n\nFACULTY";
         cout << "\nMaximum Books: 5";
         cout << "\nBorrowing Period: 30 Days";
         cout << "\nRenewals: 2";
         cout << "\nFine: Rs.2 per day";
 
-        cout << "\n\nStaff:";
+        cout << "\n\nSTAFF";
         cout << "\nMaximum Books: 3";
         cout << "\nBorrowing Period: 21 Days";
         cout << "\nRenewals: 1";
@@ -423,7 +453,8 @@ private:
 
 public:
 
-    // Load sample books
+    // ADD SAMPLE BOOKS
+
     void addSampleBooks() {
 
         books.push_back(Book(101, "Dune", "Frank Herbert",
@@ -457,7 +488,42 @@ public:
         "History", 2, "E1"));
     }
 
+    // DISPLAY AVAILABLE BOOKS IN MAIN MENU
+
+    void displayAvailableBooks() {
+
+        cout << "\n========== AVAILABLE BOOKS ==========\n";
+
+        cout << left
+             << setw(12) << "Book ID"
+             << setw(35) << "Book Title"
+             << "Author Name\n";
+
+        cout << "---------------------------------------------------------------\n";
+
+        bool found = false;
+
+        for (auto &b : books) {
+
+            if (b.availableCopies > 0) {
+
+                cout << left
+                     << setw(12) << b.bookID
+                     << setw(35) << b.title
+                     << b.author << "\n";
+
+                found = true;
+            }
+        }
+
+        if (!found)
+            cout << "No books are currently available!\n";
+
+        cout << "---------------------------------------------------------------\n";
+    }
+
     // ADMIN LOGIN
+
     bool adminLogin() {
 
         string username, password;
@@ -474,6 +540,7 @@ public:
             password == adminPassword) {
 
             cout << "\nAdmin Login Successful!\n";
+
             return true;
         }
 
@@ -483,9 +550,11 @@ public:
     }
 
     // ADD NEW BOOK
+
     void addBook() {
 
         int id, copies;
+
         string title, author, genre, location;
 
         cout << "\nEnter Book ID: ";
@@ -496,10 +565,8 @@ public:
             return;
         }
 
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
         cout << "Enter Book Title: ";
-        getline(cin, title);
+        getline(cin >> ws, title);
 
         cout << "Enter Author: ";
         getline(cin, author);
@@ -515,10 +582,8 @@ public:
             return;
         }
 
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
         cout << "Enter Shelf Location: ";
-        getline(cin, location);
+        getline(cin >> ws, location);
 
         books.push_back(Book(id, title, author,
                              genre, copies, location));
@@ -527,6 +592,7 @@ public:
     }
 
     // DISPLAY ALL BOOKS
+
     void displayBooks() {
 
         if (books.empty()) {
@@ -542,8 +608,10 @@ public:
             cout << "\nTitle: " << b.title;
             cout << "\nAuthor: " << b.author;
             cout << "\nGenre: " << b.genre;
+
             cout << "\nTotal Copies: " << b.totalCopies;
             cout << "\nAvailable Copies: " << b.availableCopies;
+
             cout << "\nShelf Location: " << b.location;
 
             cout << "\n------------------------------------\n";
@@ -551,6 +619,7 @@ public:
     }
 
     // LOCATE BOOK
+
     void locateBook() {
 
         vector<int> results = searchBooks();
@@ -560,12 +629,13 @@ public:
             return;
         }
 
-        cout << "\n========== SEARCH RESULTS ==========\n";
+        cout << "\n========== BOOK DETAILS ==========\n";
 
         displayResults(results);
     }
 
     // DISCARD BOOK
+
     void discardBook() {
 
         int id;
@@ -591,6 +661,7 @@ public:
     }
 
     // BORROW BOOK
+
     void borrowBook() {
 
         string name, id, type;
@@ -601,14 +672,18 @@ public:
         int activeBooks = 0;
 
         for (auto &br : borrowers) {
+
             if (br.borrowerID == id && !br.returned)
                 activeBooks++;
         }
 
         if (activeBooks >= getBorrowLimit(type)) {
+
             cout << "\nBorrowing Limit Reached!\n";
+
             cout << "Your maximum limit is "
                  << getBorrowLimit(type) << " books.\n";
+
             return;
         }
 
@@ -656,16 +731,22 @@ public:
         books[index].availableCopies--;
 
         cout << "\n========== BORROWING SUCCESSFUL ==========\n";
+
         cout << "Book: " << books[index].title;
         cout << "\nBorrower: " << name;
         cout << "\nCategory: " << type;
-        cout << "\nBorrowing Date: " << borrowDate.toString();
-        cout << "\nDue Date: " << dueDate.toString();
+
+        cout << "\nBorrowing Date: "
+             << borrowDate.toString();
+
+        cout << "\nDue Date: "
+             << dueDate.toString();
 
         cout << "\n==========================================\n";
     }
 
     // RETURN BOOK
+
     void returnBook() {
 
         string id;
@@ -686,8 +767,6 @@ public:
                 Date returnDate;
 
                 cout << "Enter Return Date (DD-MM-YYYY): ";
-
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
                 if (!Date::readDate(returnDate)) {
                     cout << "Invalid Date!\n";
@@ -714,7 +793,9 @@ public:
                     cout << "\nFine: Rs." << br.fine;
                 }
                 else {
+
                     br.fine = 0;
+
                     cout << "\nBook Returned On Time!\n";
                     cout << "Fine: Rs.0";
                 }
@@ -724,8 +805,10 @@ public:
                 if (index != -1)
                     books[index].availableCopies++;
 
-                cout << "\nReturn Date: " << returnDate.toString();
-                cout << "\nBook returned successfully!\n";
+                cout << "\nReturn Date: "
+                     << returnDate.toString();
+
+                cout << "\nBook Returned Successfully!\n";
 
                 return;
             }
@@ -735,6 +818,7 @@ public:
     }
 
     // RENEW BOOK
+
     void renewBook() {
 
         string id;
@@ -756,8 +840,6 @@ public:
 
                 cout << "Enter Renewal Date (DD-MM-YYYY): ";
 
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
                 if (!Date::readDate(renewalDate)) {
                     cout << "Invalid Date!\n";
                     return;
@@ -778,8 +860,12 @@ public:
                 br.renewals++;
 
                 cout << "\nBook Renewed Successfully!\n";
-                cout << "New Due Date: " << br.dueDate.toString();
-                cout << "\nRenewals Used: " << br.renewals << endl;
+
+                cout << "New Due Date: "
+                     << br.dueDate.toString();
+
+                cout << "\nRenewals Used: "
+                     << br.renewals << endl;
 
                 return;
             }
@@ -788,7 +874,8 @@ public:
         cout << "\nActive Borrowing Record Not Found!\n";
     }
 
-    // BORROWING RECORDS
+    // VIEW BORROWING RECORDS
+
     void borrowingRecords() {
 
         if (borrowers.empty()) {
@@ -804,12 +891,20 @@ public:
             cout << "\nBorrower ID: " << br.borrowerID;
             cout << "\nCategory: " << br.type;
             cout << "\nBook ID: " << br.bookID;
-            cout << "\nBorrowing Date: " << br.borrowDate.toString();
-            cout << "\nDue Date: " << br.dueDate.toString();
+
+            cout << "\nBorrowing Date: "
+                 << br.borrowDate.toString();
+
+            cout << "\nDue Date: "
+                 << br.dueDate.toString();
+
             cout << "\nRenewals Used: " << br.renewals;
 
             if (br.returned) {
-                cout << "\nReturn Date: " << br.returnDate.toString();
+
+                cout << "\nReturn Date: "
+                     << br.returnDate.toString();
+
                 cout << "\nStatus: Returned";
                 cout << "\nFine: Rs." << br.fine;
             }
@@ -822,13 +917,12 @@ public:
     }
 
     // VIEW OVERDUE BOOKS
+
     void overdueBooks() {
 
         Date today;
 
         cout << "\nEnter Today's Date (DD-MM-YYYY): ";
-
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         if (!Date::readDate(today)) {
             cout << "Invalid Date!\n";
@@ -852,7 +946,10 @@ public:
                 cout << "\nBorrower: " << br.name;
                 cout << "\nBorrower ID: " << br.borrowerID;
                 cout << "\nBook ID: " << br.bookID;
-                cout << "\nDue Date: " << br.dueDate.toString();
+
+                cout << "\nDue Date: "
+                     << br.dueDate.toString();
+
                 cout << "\nOverdue Days: " << days;
                 cout << "\nCurrent Fine: Rs." << fine;
 
@@ -866,7 +963,8 @@ public:
             cout << "\nNo Overdue Books!\n";
     }
 
-    // CHECK AVAILABILITY
+    // CHECK BOOK AVAILABILITY
+
     void checkAvailability() {
 
         int id;
@@ -885,10 +983,12 @@ public:
 
         cout << "\nBook: " << b.title;
         cout << "\nTotal Copies: " << b.totalCopies;
+
         cout << "\nBorrowed Copies: "
              << b.totalCopies - b.availableCopies;
-        cout << "\nAvailable Copies: " << b.availableCopies;
-        cout << "\nShelf Location: " << b.location;
+
+        cout << "\nAvailable Copies: "
+             << b.availableCopies;
 
         if (b.availableCopies > 0)
             cout << "\nStatus: Available\n";
@@ -897,6 +997,7 @@ public:
     }
 
     // VIEW MEMBER RECORDS
+
     void memberRecords() {
 
         string id;
@@ -913,10 +1014,15 @@ public:
                 cout << "\nBook ID: " << br.bookID;
                 cout << "\nBorrower: " << br.name;
                 cout << "\nCategory: " << br.type;
-                cout << "\nBorrowing Date: " << br.borrowDate.toString();
-                cout << "\nDue Date: " << br.dueDate.toString();
+
+                cout << "\nBorrowing Date: "
+                     << br.borrowDate.toString();
+
+                cout << "\nDue Date: "
+                     << br.dueDate.toString();
 
                 if (br.returned) {
+
                     cout << "\nStatus: Returned";
                     cout << "\nFine: Rs." << br.fine;
                 }
@@ -934,7 +1040,8 @@ public:
             cout << "\nNo Records Found!\n";
     }
 
-    // ADMIN MENU
+    // ADMIN DASHBOARD
+
     void adminMenu() {
 
         int choice;
@@ -958,14 +1065,37 @@ public:
 
             switch (choice) {
 
-                case 1: addBook(); break;
-                case 2: displayBooks(); break;
-                case 3: locateBook(); break;
-                case 4: discardBook(); break;
-                case 5: borrowingRecords(); break;
-                case 6: overdueBooks(); break;
-                case 7: checkAvailability(); break;
-                case 8: displayRules(); break;
+                case 1:
+                    addBook();
+                    break;
+
+                case 2:
+                    displayBooks();
+                    break;
+
+                case 3:
+                    locateBook();
+                    break;
+
+                case 4:
+                    discardBook();
+                    break;
+
+                case 5:
+                    borrowingRecords();
+                    break;
+
+                case 6:
+                    overdueBooks();
+                    break;
+
+                case 7:
+                    checkAvailability();
+                    break;
+
+                case 8:
+                    displayRules();
+                    break;
 
                 case 9:
                     cout << "\nAdmin Logged Out!\n";
@@ -978,7 +1108,8 @@ public:
         } while (choice != 9);
     }
 
-    // MEMBER MENU
+    // MEMBER DASHBOARD
+
     void memberMenu() {
 
         int choice;
@@ -1001,13 +1132,33 @@ public:
 
             switch (choice) {
 
-                case 1: locateBook(); break;
-                case 2: borrowBook(); break;
-                case 3: returnBook(); break;
-                case 4: renewBook(); break;
-                case 5: memberRecords(); break;
-                case 6: checkAvailability(); break;
-                case 7: displayRules(); break;
+                case 1:
+                    locateBook();
+                    break;
+
+                case 2:
+                    borrowBook();
+                    break;
+
+                case 3:
+                    returnBook();
+                    break;
+
+                case 4:
+                    renewBook();
+                    break;
+
+                case 5:
+                    memberRecords();
+                    break;
+
+                case 6:
+                    checkAvailability();
+                    break;
+
+                case 7:
+                    displayRules();
+                    break;
 
                 case 8:
                     cout << "\nLeaving Member Dashboard!\n";
@@ -1021,21 +1172,26 @@ public:
     }
 
     // MAIN MENU
+
     void menu() {
 
         int choice;
 
         do {
 
-            cout << "\n\n====================================\n";
+            // AVAILABLE BOOKS DISPLAY AUTOMATICALLY
+
+            displayAvailableBooks();
+
+            cout << "\n====================================\n";
             cout << "       LIBRARY MANAGEMENT SYSTEM\n";
             cout << "====================================\n";
 
             cout << "1. Administrator Login\n";
             cout << "2. Member Access\n";
-            cout << "3. Exit";
+            cout << "3. Exit\n";
 
-            cout << "\n\nEnter Choice: ";
+            cout << "\nEnter Choice: ";
             cin >> choice;
 
             switch (choice) {
@@ -1061,7 +1217,7 @@ public:
     }
 };
 
-//MAIN FUNCTION
+// ================= MAIN FUNCTION =================
 
 int main() {
 
