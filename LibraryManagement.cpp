@@ -4,29 +4,44 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
-#include <limits>
+#include <memory>
 #include <cctype>
 
 using namespace std;
 
-// ================= DATE CLASS =================
+// ==================================================
+//                     DATE CLASS
+// ==================================================
 
 class Date {
-public:
+private:
     int day, month, year;
 
+public:
     Date(int d = 1, int m = 1, int y = 2026) {
         day = d;
         month = m;
         year = y;
     }
 
-    bool isLeapYear() {
+    int getDay() const {
+        return day;
+    }
+
+    int getMonth() const {
+        return month;
+    }
+
+    int getYear() const {
+        return year;
+    }
+
+    bool isLeapYear() const {
         return (year % 400 == 0 ||
                (year % 4 == 0 && year % 100 != 0));
     }
 
-    int daysInMonth() {
+    int daysInMonth() const {
         int days[] = {31, 28, 31, 30, 31, 30,
                       31, 31, 30, 31, 30, 31};
 
@@ -36,7 +51,7 @@ public:
         return days[month - 1];
     }
 
-    bool valid() {
+    bool isValid() const {
         if (year < 1 || month < 1 || month > 12)
             return false;
 
@@ -66,7 +81,7 @@ public:
         }
     }
 
-    long long serial() {
+    long long serial() const {
         int y = year;
         int m = month;
 
@@ -84,7 +99,7 @@ public:
         return era * 146097 + doe;
     }
 
-    string toString() {
+    string toString() const {
         stringstream ss;
 
         ss << setfill('0')
@@ -95,14 +110,11 @@ public:
         return ss.str();
     }
 
-    // UPDATED DATE INPUT FUNCTION
+    // Reads date in DD-MM-YYYY format
 
     static bool readDate(Date &date) {
         string input;
-        char dash1, dash2;
-        char extra;
-
-        cout << flush;
+        char dash1, dash2, extra;
 
         getline(cin >> ws, input);
 
@@ -118,18 +130,21 @@ public:
         if (ss >> extra)
             return false;
 
-        return date.valid();
+        return date.isValid();
     }
 };
 
-// ================= BOOK CLASS =================
+// ==================================================
+//                     BOOK CLASS
+// ==================================================
 
 class Book {
-public:
+private:
     int bookID;
     string title, author, genre, location;
     int totalCopies, availableCopies;
 
+public:
     Book(int id, string t, string a, string g,
          int copies, string loc) {
 
@@ -141,14 +156,196 @@ public:
         availableCopies = copies;
         location = loc;
     }
+
+    // Getter functions
+
+    int getBookID() const {
+        return bookID;
+    }
+
+    string getTitle() const {
+        return title;
+    }
+
+    string getAuthor() const {
+        return author;
+    }
+
+    string getGenre() const {
+        return genre;
+    }
+
+    string getLocation() const {
+        return location;
+    }
+
+    int getTotalCopies() const {
+        return totalCopies;
+    }
+
+    int getAvailableCopies() const {
+        return availableCopies;
+    }
+
+    // Book availability operations
+
+    bool isAvailable() const {
+        return availableCopies > 0;
+    }
+
+    bool borrowCopy() {
+        if (availableCopies <= 0)
+            return false;
+
+        availableCopies--;
+        return true;
+    }
+
+    void returnCopy() {
+        if (availableCopies < totalCopies)
+            availableCopies++;
+    }
+
+    void displayDetails() const {
+        cout << "\nBook ID: " << bookID;
+        cout << "\nTitle: " << title;
+        cout << "\nAuthor: " << author;
+        cout << "\nGenre: " << genre;
+        cout << "\nAvailable Copies: " << availableCopies;
+        cout << "\nShelf Location: " << location;
+        cout << "\n-----------------------------\n";
+    }
+
+    void displayFullDetails() const {
+        displayDetails();
+        cout << "Total Copies: " << totalCopies << endl;
+    }
 };
 
-// ================= BORROWER CLASS =================
+
+class Member {
+protected:
+    string name;
+    string memberID;
+
+public:
+    Member(string n, string id) {
+        name = n;
+        memberID = id;
+    }
+
+    virtual ~Member() {}
+
+    string getName() const {
+        return name;
+    }
+
+    string getMemberID() const {
+        return memberID;
+    }
+
+    // Pure virtual functions: abstraction
+
+    virtual string getType() const = 0;
+    virtual int getBorrowLimit() const = 0;
+    virtual int getBorrowDays() const = 0;
+    virtual int getRenewalLimit() const = 0;
+    virtual double getFineRate() const = 0;
+
+    virtual void displayPolicy() const {
+        cout << "\nMember Type: " << getType();
+        cout << "\nMaximum Books: " << getBorrowLimit();
+        cout << "\nBorrowing Period: " << getBorrowDays()
+             << " days";
+        cout << "\nRenewal Limit: " << getRenewalLimit();
+        cout << "\nFine Per Day: Rs." << getFineRate();
+        cout << "\n";
+    }
+};
+
+class Student : public Member {
+public:
+    Student(string n, string id) : Member(n, id) {}
+
+    string getType() const override {
+        return "Student";
+    }
+
+    int getBorrowLimit() const override {
+        return 2;
+    }
+
+    int getBorrowDays() const override {
+        return 14;
+    }
+
+    int getRenewalLimit() const override {
+        return 1;
+    }
+
+    double getFineRate() const override {
+        return 5.0;
+    }
+};
+
+
+class Faculty : public Member {
+public:
+    Faculty(string n, string id) : Member(n, id) {}
+
+    string getType() const override {
+        return "Faculty";
+    }
+
+    int getBorrowLimit() const override {
+        return 5;
+    }
+
+    int getBorrowDays() const override {
+        return 30;
+    }
+
+    int getRenewalLimit() const override {
+        return 2;
+    }
+
+    double getFineRate() const override {
+        return 2.0;
+    }
+};
+
+class Staff : public Member {
+public:
+    Staff(string n, string id) : Member(n, id) {}
+
+    string getType() const override {
+        return "Staff";
+    }
+
+    int getBorrowLimit() const override {
+        return 3;
+    }
+
+    int getBorrowDays() const override {
+        return 21;
+    }
+
+    int getRenewalLimit() const override {
+        return 1;
+    }
+
+    double getFineRate() const override {
+        return 3.0;
+    }
+};
+
+// ==================================================
+//                  BORROWER CLASS
+// ==================================================
 
 class Borrower {
-public:
+private:
     string name, borrowerID, type;
-
     int bookID;
 
     Date borrowDate, dueDate, returnDate;
@@ -157,6 +354,7 @@ public:
     bool returned;
     double fine;
 
+public:
     Borrower(string n, string id, string t, int bID,
              Date bDate, Date dDate) {
 
@@ -172,23 +370,74 @@ public:
         returned = false;
         fine = 0;
     }
+
+    string getName() const {
+        return name;
+    }
+
+    string getBorrowerID() const {
+        return borrowerID;
+    }
+
+    string getType() const {
+        return type;
+    }
+
+    int getBookID() const {
+        return bookID;
+    }
+
+    Date getBorrowDate() const {
+        return borrowDate;
+    }
+
+    Date getDueDate() const {
+        return dueDate;
+    }
+
+    Date getReturnDate() const {
+        return returnDate;
+    }
+
+    int getRenewals() const {
+        return renewals;
+    }
+
+    bool isReturned() const {
+        return returned;
+    }
+
+    double getFine() const {
+        return fine;
+    }
+
+    void renew(int days) {
+        dueDate.addDays(days);
+        renewals++;
+    }
+
+    void completeReturn(Date date, double amount) {
+        returnDate = date;
+        returned = true;
+        fine = amount;
+    }
 };
 
-// ================= LIBRARY CLASS =================
+// ==================================================
+//                 LIBRARY CLASS
+// ==================================================
 
 class Library {
-
 private:
-
     vector<Book> books;
     vector<Borrower> borrowers;
 
     string adminUsername = "admin";
     string adminPassword = "library123";
 
-    // CONVERT STRING TO LOWERCASE
+    // Convert string to lowercase
 
-    string toLowerCase(string text) {
+    string toLowerCase(string text) const {
         transform(text.begin(), text.end(), text.begin(),
                   [](unsigned char c) {
                       return tolower(c);
@@ -197,77 +446,29 @@ private:
         return text;
     }
 
-    // BORROWING PERIOD
+    // Create derived Member objects
 
-    int getBorrowDays(string type) {
+    unique_ptr<Member> createMember(
+        string name, string id, string type) {
+
         if (type == "Student")
-            return 14;
+            return unique_ptr<Member>(new Student(name, id));
 
         if (type == "Faculty")
-            return 30;
+            return unique_ptr<Member>(new Faculty(name, id));
 
         if (type == "Staff")
-            return 21;
+            return unique_ptr<Member>(new Staff(name, id));
 
-        return 0;
+        return nullptr;
     }
 
-    // BORROWING LIMIT
+    // Get member details
 
-    int getBorrowLimit(string type) {
-        if (type == "Student")
-            return 2;
+    unique_ptr<Member> getMember() {
 
-        if (type == "Faculty")
-            return 5;
-
-        if (type == "Staff")
-            return 3;
-
-        return 0;
-    }
-
-    // RENEWAL LIMIT
-
-    int getRenewalLimit(string type) {
-        if (type == "Faculty")
-            return 2;
-
-        if (type == "Student" || type == "Staff")
-            return 1;
-
-        return 0;
-    }
-
-    // FINE RATE
-
-    double getFineRate(string type) {
-        if (type == "Student")
-            return 5;
-
-        if (type == "Faculty")
-            return 2;
-
-        if (type == "Staff")
-            return 3;
-
-        return 0;
-    }
-
-    // FIND BOOK USING ID
-
-    int findBook(int id) {
-        for (int i = 0; i < books.size(); i++) {
-            if (books[i].bookID == id)
-                return i;
-        }
-
-        return -1;
-    }
-
-    // GET MEMBER DETAILS
-
-    bool getMember(string &name, string &id, string &type) {
+        string name, id;
+        int choice;
 
         cout << "\nEnter Member Name: ";
         getline(cin >> ws, name);
@@ -281,9 +482,9 @@ private:
         cout << "3. Staff\n";
 
         cout << "Enter choice: ";
-
-        int choice;
         cin >> choice;
+
+        string type;
 
         switch (choice) {
             case 1:
@@ -299,19 +500,29 @@ private:
                 break;
 
             default:
-                cout << "Invalid member type!\n";
-                return false;
+                cout << "Invalid Member Type!\n";
+                return nullptr;
         }
 
-        return true;
+        return createMember(name, id, type);
     }
 
-    // SEARCH BOOKS
+    // Find book by ID
+
+    int findBook(int id) const {
+        for (int i = 0; i < (int)books.size(); i++) {
+            if (books[i].getBookID() == id)
+                return i;
+        }
+
+        return -1;
+    }
+
+    // Find book by search
 
     vector<int> searchBooks() {
 
         vector<int> results;
-
         int choice;
 
         cout << "\nSearch By:\n";
@@ -348,19 +559,14 @@ private:
 
             keyword = toLowerCase(keyword);
 
-            if (keyword.empty()) {
-                cout << "Search cannot be empty!\n";
-                return results;
-            }
-
-            for (int i = 0; i < books.size(); i++) {
+            for (int i = 0; i < (int)books.size(); i++) {
 
                 string value;
 
                 if (choice == 2)
-                    value = toLowerCase(books[i].title);
+                    value = toLowerCase(books[i].getTitle());
                 else
-                    value = toLowerCase(books[i].author);
+                    value = toLowerCase(books[i].getAuthor());
 
                 if (value.find(keyword) != string::npos)
                     results.push_back(i);
@@ -368,39 +574,26 @@ private:
         }
 
         else {
-            cout << "Invalid search option!\n";
+            cout << "Invalid Search Option!\n";
         }
 
         return results;
     }
 
-    // DISPLAY SEARCH RESULTS
+    // Display search results
 
-    void displayResults(vector<int> results) {
+    void displayResults(const vector<int> &results) const {
 
-        for (int i : results) {
-
-            cout << "\nBook ID: " << books[i].bookID;
-            cout << "\nTitle: " << books[i].title;
-            cout << "\nAuthor: " << books[i].author;
-            cout << "\nGenre: " << books[i].genre;
-
-            cout << "\nAvailable Copies: "
-                 << books[i].availableCopies;
-
-            cout << "\nShelf Location: "
-                 << books[i].location;
-
-            cout << "\n-----------------------------\n";
-        }
+        for (int i : results)
+            books[i].displayDetails();
     }
 
-    // SELECT BOOK
+    // Select a book
 
-    int selectBook(vector<int> results) {
+    int selectBook(const vector<int> &results) {
 
         if (results.empty()) {
-            cout << "\nBook not found!\n";
+            cout << "\nBook Not Found!\n";
             return -1;
         }
 
@@ -415,45 +608,56 @@ private:
         cin >> id;
 
         for (int i : results) {
-            if (books[i].bookID == id)
+            if (books[i].getBookID() == id)
                 return i;
         }
 
         cout << "Invalid Book ID!\n";
+        return -1;
+    }
+
+    // Find active borrowing record
+
+    int findActiveRecord(string id, int bookID) const {
+
+        for (int i = 0; i < (int)borrowers.size(); i++) {
+
+            if (borrowers[i].getBorrowerID() == id &&
+                borrowers[i].getBookID() == bookID &&
+                !borrowers[i].isReturned()) {
+
+                return i;
+            }
+        }
 
         return -1;
     }
 
-    // BORROWING POLICY
+    // Display borrowing policy using polymorphism
 
     void displayRules() {
 
         cout << "\n========== BORROWING POLICY ==========\n";
 
-        cout << "\nSTUDENT";
-        cout << "\nMaximum Books: 2";
-        cout << "\nBorrowing Period: 14 Days";
-        cout << "\nRenewals: 1";
-        cout << "\nFine: Rs.5 per day";
+        unique_ptr<Member> student =
+            createMember("", "", "Student");
 
-        cout << "\n\nFACULTY";
-        cout << "\nMaximum Books: 5";
-        cout << "\nBorrowing Period: 30 Days";
-        cout << "\nRenewals: 2";
-        cout << "\nFine: Rs.2 per day";
+        unique_ptr<Member> faculty =
+            createMember("", "", "Faculty");
 
-        cout << "\n\nSTAFF";
-        cout << "\nMaximum Books: 3";
-        cout << "\nBorrowing Period: 21 Days";
-        cout << "\nRenewals: 1";
-        cout << "\nFine: Rs.3 per day";
+        unique_ptr<Member> staff =
+            createMember("", "", "Staff");
 
-        cout << "\n======================================\n";
+        student->displayPolicy();
+        faculty->displayPolicy();
+        staff->displayPolicy();
+
+        cout << "======================================\n";
     }
 
 public:
 
-    // ADD SAMPLE BOOKS
+    // Add sample books
 
     void addSampleBooks() {
 
@@ -488,9 +692,9 @@ public:
         "History", 2, "E1"));
     }
 
-    // DISPLAY AVAILABLE BOOKS IN MAIN MENU
+    // Display available books on main menu
 
-    void displayAvailableBooks() {
+    void displayAvailableBooks() const {
 
         cout << "\n========== AVAILABLE BOOKS ==========\n";
 
@@ -503,14 +707,14 @@ public:
 
         bool found = false;
 
-        for (auto &b : books) {
+        for (const auto &b : books) {
 
-            if (b.availableCopies > 0) {
+            if (b.isAvailable()) {
 
                 cout << left
-                     << setw(12) << b.bookID
-                     << setw(35) << b.title
-                     << b.author << "\n";
+                     << setw(12) << b.getBookID()
+                     << setw(35) << b.getTitle()
+                     << b.getAuthor() << "\n";
 
                 found = true;
             }
@@ -522,7 +726,7 @@ public:
         cout << "---------------------------------------------------------------\n";
     }
 
-    // ADMIN LOGIN
+    // Admin login
 
     bool adminLogin() {
 
@@ -540,28 +744,25 @@ public:
             password == adminPassword) {
 
             cout << "\nAdmin Login Successful!\n";
-
             return true;
         }
 
         cout << "\nIncorrect Username or Password!\n";
-
         return false;
     }
 
-    // ADD NEW BOOK
+    // Add new book
 
     void addBook() {
 
         int id, copies;
-
         string title, author, genre, location;
 
         cout << "\nEnter Book ID: ";
         cin >> id;
 
         if (findBook(id) != -1) {
-            cout << "Book ID already exists!\n";
+            cout << "Book ID Already Exists!\n";
             return;
         }
 
@@ -578,7 +779,7 @@ public:
         cin >> copies;
 
         if (copies <= 0) {
-            cout << "Invalid number of copies!\n";
+            cout << "Invalid Number of Copies!\n";
             return;
         }
 
@@ -591,9 +792,9 @@ public:
         cout << "\nBook Added Successfully!\n";
     }
 
-    // DISPLAY ALL BOOKS
+    // Display all books
 
-    void displayBooks() {
+    void displayBooks() const {
 
         if (books.empty()) {
             cout << "\nNo Books Available!\n";
@@ -602,23 +803,11 @@ public:
 
         cout << "\n========== BOOK CATALOGUE ==========\n";
 
-        for (auto &b : books) {
-
-            cout << "\nBook ID: " << b.bookID;
-            cout << "\nTitle: " << b.title;
-            cout << "\nAuthor: " << b.author;
-            cout << "\nGenre: " << b.genre;
-
-            cout << "\nTotal Copies: " << b.totalCopies;
-            cout << "\nAvailable Copies: " << b.availableCopies;
-
-            cout << "\nShelf Location: " << b.location;
-
-            cout << "\n------------------------------------\n";
-        }
+        for (const auto &b : books)
+            b.displayFullDetails();
     }
 
-    // LOCATE BOOK
+    // Locate a book
 
     void locateBook() {
 
@@ -634,7 +823,7 @@ public:
         displayResults(results);
     }
 
-    // DISCARD BOOK
+    // Discard book
 
     void discardBook() {
 
@@ -650,8 +839,10 @@ public:
             return;
         }
 
-        if (books[index].availableCopies != books[index].totalCopies) {
-            cout << "Cannot discard! Some copies are borrowed.\n";
+        if (books[index].getAvailableCopies() !=
+            books[index].getTotalCopies()) {
+
+            cout << "Cannot Discard! Some Copies Are Borrowed.\n";
             return;
         }
 
@@ -660,29 +851,32 @@ public:
         cout << "\nBook Discarded Successfully!\n";
     }
 
-    // BORROW BOOK
+    // Borrow book
 
     void borrowBook() {
 
-        string name, id, type;
+        unique_ptr<Member> member = getMember();
 
-        if (!getMember(name, id, type))
+        if (!member)
             return;
 
         int activeBooks = 0;
 
-        for (auto &br : borrowers) {
+        for (const auto &br : borrowers) {
 
-            if (br.borrowerID == id && !br.returned)
+            if (br.getBorrowerID() == member->getMemberID() &&
+                !br.isReturned()) {
+
                 activeBooks++;
+            }
         }
 
-        if (activeBooks >= getBorrowLimit(type)) {
+        if (activeBooks >= member->getBorrowLimit()) {
 
             cout << "\nBorrowing Limit Reached!\n";
 
-            cout << "Your maximum limit is "
-                 << getBorrowLimit(type) << " books.\n";
+            cout << "Your Maximum Limit Is "
+                 << member->getBorrowLimit() << " Books.\n";
 
             return;
         }
@@ -694,20 +888,16 @@ public:
         if (index == -1)
             return;
 
-        if (books[index].availableCopies <= 0) {
-            cout << "\nBook is currently unavailable!\n";
+        if (!books[index].isAvailable()) {
+            cout << "\nBook Is Currently Unavailable!\n";
             return;
         }
 
-        for (auto &br : borrowers) {
+        if (findActiveRecord(member->getMemberID(),
+                            books[index].getBookID()) != -1) {
 
-            if (br.borrowerID == id &&
-                br.bookID == books[index].bookID &&
-                !br.returned) {
-
-                cout << "\nYou have already borrowed this book!\n";
-                return;
-            }
+            cout << "\nYou Have Already Borrowed This Book!\n";
+            return;
         }
 
         Date borrowDate;
@@ -721,20 +911,27 @@ public:
 
         Date dueDate = borrowDate;
 
-        dueDate.addDays(getBorrowDays(type));
+        dueDate.addDays(member->getBorrowDays());
+
+        if (!books[index].borrowCopy()) {
+            cout << "Book Is No Longer Available!\n";
+            return;
+        }
 
         borrowers.push_back(Borrower(
-            name, id, type, books[index].bookID,
-            borrowDate, dueDate
+            member->getName(),
+            member->getMemberID(),
+            member->getType(),
+            books[index].getBookID(),
+            borrowDate,
+            dueDate
         ));
-
-        books[index].availableCopies--;
 
         cout << "\n========== BORROWING SUCCESSFUL ==========\n";
 
-        cout << "Book: " << books[index].title;
-        cout << "\nBorrower: " << name;
-        cout << "\nCategory: " << type;
+        cout << "Book: " << books[index].getTitle();
+        cout << "\nBorrower: " << member->getName();
+        cout << "\nCategory: " << member->getType();
 
         cout << "\nBorrowing Date: "
              << borrowDate.toString();
@@ -745,7 +942,7 @@ public:
         cout << "\n==========================================\n";
     }
 
-    // RETURN BOOK
+    // Return book
 
     void returnBook() {
 
@@ -758,66 +955,63 @@ public:
         cout << "Enter Book ID: ";
         cin >> bookID;
 
-        for (auto &br : borrowers) {
+        int recordIndex = findActiveRecord(id, bookID);
 
-            if (br.borrowerID == id &&
-                br.bookID == bookID &&
-                !br.returned) {
-
-                Date returnDate;
-
-                cout << "Enter Return Date (DD-MM-YYYY): ";
-
-                if (!Date::readDate(returnDate)) {
-                    cout << "Invalid Date!\n";
-                    return;
-                }
-
-                if (returnDate.serial() < br.borrowDate.serial()) {
-                    cout << "Return date cannot be before borrowing date!\n";
-                    return;
-                }
-
-                br.returnDate = returnDate;
-                br.returned = true;
-
-                long long overdueDays =
-                    returnDate.serial() - br.dueDate.serial();
-
-                if (overdueDays > 0) {
-
-                    br.fine = overdueDays * getFineRate(br.type);
-
-                    cout << "\nBook Returned Late!\n";
-                    cout << "Overdue Days: " << overdueDays;
-                    cout << "\nFine: Rs." << br.fine;
-                }
-                else {
-
-                    br.fine = 0;
-
-                    cout << "\nBook Returned On Time!\n";
-                    cout << "Fine: Rs.0";
-                }
-
-                int index = findBook(bookID);
-
-                if (index != -1)
-                    books[index].availableCopies++;
-
-                cout << "\nReturn Date: "
-                     << returnDate.toString();
-
-                cout << "\nBook Returned Successfully!\n";
-
-                return;
-            }
+        if (recordIndex == -1) {
+            cout << "\nActive Borrowing Record Not Found!\n";
+            return;
         }
 
-        cout << "\nActive Borrowing Record Not Found!\n";
+        Date returnDate;
+
+        cout << "Enter Return Date (DD-MM-YYYY): ";
+
+        if (!Date::readDate(returnDate)) {
+            cout << "Invalid Date!\n";
+            return;
+        }
+
+        Borrower &br = borrowers[recordIndex];
+
+        if (returnDate.serial() < br.getBorrowDate().serial()) {
+            cout << "Return Date Cannot Be Before Borrowing Date!\n";
+            return;
+        }
+
+        long long overdueDays =
+            returnDate.serial() - br.getDueDate().serial();
+
+        double fine = 0;
+
+        unique_ptr<Member> member =
+            createMember(br.getName(), br.getBorrowerID(),
+                         br.getType());
+
+        if (overdueDays > 0) {
+
+            fine = overdueDays * member->getFineRate();
+
+            cout << "\nBook Returned Late!\n";
+            cout << "Overdue Days: " << overdueDays;
+            cout << "\nFine: Rs." << fine;
+        }
+        else {
+            cout << "\nBook Returned On Time!\n";
+            cout << "Fine: Rs.0";
+        }
+
+        br.completeReturn(returnDate, fine);
+
+        int bookIndex = findBook(bookID);
+
+        if (bookIndex != -1)
+            books[bookIndex].returnCopy();
+
+        cout << "\nReturn Date: " << returnDate.toString();
+        cout << "\nBook Returned Successfully!\n";
     }
 
-    // RENEW BOOK
+    // Renew book
 
     void renewBook() {
 
@@ -830,53 +1024,57 @@ public:
         cout << "Enter Book ID: ";
         cin >> bookID;
 
-        for (auto &br : borrowers) {
+        int recordIndex = findActiveRecord(id, bookID);
 
-            if (br.borrowerID == id &&
-                br.bookID == bookID &&
-                !br.returned) {
-
-                Date renewalDate;
-
-                cout << "Enter Renewal Date (DD-MM-YYYY): ";
-
-                if (!Date::readDate(renewalDate)) {
-                    cout << "Invalid Date!\n";
-                    return;
-                }
-
-                if (renewalDate.serial() > br.dueDate.serial()) {
-                    cout << "Overdue books cannot be renewed!\n";
-                    return;
-                }
-
-                if (br.renewals >= getRenewalLimit(br.type)) {
-                    cout << "Renewal Limit Reached!\n";
-                    return;
-                }
-
-                br.dueDate.addDays(getBorrowDays(br.type));
-
-                br.renewals++;
-
-                cout << "\nBook Renewed Successfully!\n";
-
-                cout << "New Due Date: "
-                     << br.dueDate.toString();
-
-                cout << "\nRenewals Used: "
-                     << br.renewals << endl;
-
-                return;
-            }
+        if (recordIndex == -1) {
+            cout << "\nActive Borrowing Record Not Found!\n";
+            return;
         }
 
-        cout << "\nActive Borrowing Record Not Found!\n";
+        Borrower &br = borrowers[recordIndex];
+
+        Date renewalDate;
+
+        cout << "Enter Renewal Date (DD-MM-YYYY): ";
+
+        if (!Date::readDate(renewalDate)) {
+            cout << "Invalid Date!\n";
+            return;
+        }
+
+        if (renewalDate.serial() < br.getBorrowDate().serial()) {
+            cout << "Invalid Renewal Date!\n";
+            return;
+        }
+
+        if (renewalDate.serial() > br.getDueDate().serial()) {
+            cout << "Overdue Books Cannot Be Renewed!\n";
+            return;
+        }
+
+        unique_ptr<Member> member =
+            createMember(br.getName(), br.getBorrowerID(),
+                         br.getType());
+
+        if (br.getRenewals() >= member->getRenewalLimit()) {
+            cout << "Renewal Limit Reached!\n";
+            return;
+        }
+
+        br.renew(member->getBorrowDays());
+
+        cout << "\nBook Renewed Successfully!\n";
+
+        cout << "New Due Date: "
+             << br.getDueDate().toString();
+
+        cout << "\nRenewals Used: "
+             << br.getRenewals() << endl;
     }
 
-    // VIEW BORROWING RECORDS
+    // View borrowing records
 
-    void borrowingRecords() {
+    void borrowingRecords() const {
 
         if (borrowers.empty()) {
             cout << "\nNo Borrowing Records Found!\n";
@@ -885,28 +1083,28 @@ public:
 
         cout << "\n========== BORROWING RECORDS ==========\n";
 
-        for (auto &br : borrowers) {
+        for (const auto &br : borrowers) {
 
-            cout << "\nBorrower Name: " << br.name;
-            cout << "\nBorrower ID: " << br.borrowerID;
-            cout << "\nCategory: " << br.type;
-            cout << "\nBook ID: " << br.bookID;
+            cout << "\nBorrower Name: " << br.getName();
+            cout << "\nBorrower ID: " << br.getBorrowerID();
+            cout << "\nCategory: " << br.getType();
+            cout << "\nBook ID: " << br.getBookID();
 
             cout << "\nBorrowing Date: "
-                 << br.borrowDate.toString();
+                 << br.getBorrowDate().toString();
 
             cout << "\nDue Date: "
-                 << br.dueDate.toString();
+                 << br.getDueDate().toString();
 
-            cout << "\nRenewals Used: " << br.renewals;
+            cout << "\nRenewals Used: " << br.getRenewals();
 
-            if (br.returned) {
+            if (br.isReturned()) {
 
                 cout << "\nReturn Date: "
-                     << br.returnDate.toString();
+                     << br.getReturnDate().toString();
 
                 cout << "\nStatus: Returned";
-                cout << "\nFine: Rs." << br.fine;
+                cout << "\nFine: Rs." << br.getFine();
             }
             else {
                 cout << "\nStatus: Active";
@@ -916,7 +1114,7 @@ public:
         }
     }
 
-    // VIEW OVERDUE BOOKS
+    // View overdue books
 
     void overdueBooks() {
 
@@ -933,22 +1131,26 @@ public:
 
         cout << "\n========== OVERDUE BOOKS ==========\n";
 
-        for (auto &br : borrowers) {
+        for (const auto &br : borrowers) {
 
-            if (!br.returned &&
-                today.serial() > br.dueDate.serial()) {
+            if (!br.isReturned() &&
+                today.serial() > br.getDueDate().serial()) {
 
                 long long days =
-                    today.serial() - br.dueDate.serial();
+                    today.serial() - br.getDueDate().serial();
 
-                double fine = days * getFineRate(br.type);
+                unique_ptr<Member> member =
+                    createMember(br.getName(), br.getBorrowerID(),
+                                 br.getType());
 
-                cout << "\nBorrower: " << br.name;
-                cout << "\nBorrower ID: " << br.borrowerID;
-                cout << "\nBook ID: " << br.bookID;
+                double fine = days * member->getFineRate();
+
+                cout << "\nBorrower: " << br.getName();
+                cout << "\nBorrower ID: " << br.getBorrowerID();
+                cout << "\nBook ID: " << br.getBookID();
 
                 cout << "\nDue Date: "
-                     << br.dueDate.toString();
+                     << br.getDueDate().toString();
 
                 cout << "\nOverdue Days: " << days;
                 cout << "\nCurrent Fine: Rs." << fine;
@@ -963,7 +1165,7 @@ public:
             cout << "\nNo Overdue Books!\n";
     }
 
-    // CHECK BOOK AVAILABILITY
+    // Check book availability
 
     void checkAvailability() {
 
@@ -979,24 +1181,26 @@ public:
             return;
         }
 
-        Book &b = books[index];
+        const Book &b = books[index];
 
-        cout << "\nBook: " << b.title;
-        cout << "\nTotal Copies: " << b.totalCopies;
+        cout << "\nBook: " << b.getTitle();
+
+        cout << "\nTotal Copies: "
+             << b.getTotalCopies();
 
         cout << "\nBorrowed Copies: "
-             << b.totalCopies - b.availableCopies;
+             << b.getTotalCopies() - b.getAvailableCopies();
 
         cout << "\nAvailable Copies: "
-             << b.availableCopies;
+             << b.getAvailableCopies();
 
-        if (b.availableCopies > 0)
+        if (b.isAvailable())
             cout << "\nStatus: Available\n";
         else
             cout << "\nStatus: Not Available\n";
     }
 
-    // VIEW MEMBER RECORDS
+    // View member records
 
     void memberRecords() {
 
@@ -1007,24 +1211,24 @@ public:
 
         bool found = false;
 
-        for (auto &br : borrowers) {
+        for (const auto &br : borrowers) {
 
-            if (br.borrowerID == id) {
+            if (br.getBorrowerID() == id) {
 
-                cout << "\nBook ID: " << br.bookID;
-                cout << "\nBorrower: " << br.name;
-                cout << "\nCategory: " << br.type;
+                cout << "\nBook ID: " << br.getBookID();
+                cout << "\nBorrower: " << br.getName();
+                cout << "\nCategory: " << br.getType();
 
                 cout << "\nBorrowing Date: "
-                     << br.borrowDate.toString();
+                     << br.getBorrowDate().toString();
 
                 cout << "\nDue Date: "
-                     << br.dueDate.toString();
+                     << br.getDueDate().toString();
 
-                if (br.returned) {
+                if (br.isReturned()) {
 
                     cout << "\nStatus: Returned";
-                    cout << "\nFine: Rs." << br.fine;
+                    cout << "\nFine: Rs." << br.getFine();
                 }
                 else {
                     cout << "\nStatus: Active";
@@ -1040,7 +1244,7 @@ public:
             cout << "\nNo Records Found!\n";
     }
 
-    // ADMIN DASHBOARD
+    // Admin dashboard
 
     void adminMenu() {
 
@@ -1108,7 +1312,7 @@ public:
         } while (choice != 9);
     }
 
-    // MEMBER DASHBOARD
+    // Member dashboard
 
     void memberMenu() {
 
@@ -1171,7 +1375,7 @@ public:
         } while (choice != 8);
     }
 
-    // MAIN MENU
+    // Main menu
 
     void menu() {
 
@@ -1179,7 +1383,7 @@ public:
 
         do {
 
-            // AVAILABLE BOOKS DISPLAY AUTOMATICALLY
+            // Available books appear automatically
 
             displayAvailableBooks();
 
@@ -1217,15 +1421,17 @@ public:
     }
 };
 
-// ================= MAIN FUNCTION =================
+// ==================================================
+//                     MAIN FUNCTION
+// ==================================================
 
 int main() {
 
-    Library lib;
+    Library library;
 
-    lib.addSampleBooks();
+    library.addSampleBooks();
 
-    lib.menu();
+    library.menu();
 
     return 0;
 }
